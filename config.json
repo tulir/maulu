@@ -1,0 +1,21 @@
+{
+    "pages": {
+        "index": "index.html",
+        "unshorten": "unshorten.html"
+    },
+    "ip": "127.0.0.1",
+    "port": 29302,
+    "sql": {
+        "type": "mysql",
+        "connection": {
+            "mode": "tcp",
+            "ip": "127.0.0.1",
+            "port": 3306
+        },
+        "authentication": {
+            "username": "root",
+            "password": "password"
+        },
+        "database": "maulu"
+    }
+}
