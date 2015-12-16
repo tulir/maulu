@@ -28,7 +28,7 @@ func loadDatabase() {
 		log.Fatalf("Failed to open SQL connection!")
 		os.Exit(2)
 	}
-	result, err := database.Query("CREATE TABLE IF NOT EXISTS links (url VARCHAR(255) PRIMARY KEY, short VARCHAR(64) NOT NULL);")
+	result, err := database.Query("CREATE TABLE IF NOT EXISTS links (url VARCHAR(255) PRIMARY KEY, short VARCHAR(20) NOT NULL);")
 	if err != nil {
 		log.Errorf("Failed to create database: %s", err)
 	}

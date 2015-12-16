@@ -13,6 +13,7 @@ import (
 // Configuration is a container struct for the configuration.
 type Configuration struct {
 	TrustHeaders bool      `json:"trust-headers"`
+	Favicon      string    `json:"favicon"`
 	URL          string    `json:"url"`
 	IP           string    `json:"ip"`
 	Port         int       `json:"port"`
