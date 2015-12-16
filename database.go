@@ -28,7 +28,7 @@ func loadDatabase() {
 		log.Fatalf("Failed to open SQL connection!")
 		os.Exit(2)
 	}
-	result, err := database.Query("CREATE TABLE IF NOT EXISTS links (short VARCHAR(64) PRIMARY KEY, long VARCHAR(255));")
+	result, err := database.Query("CREATE TABLE IF NOT EXISTS links (short VARCHAR(64) PRIMARY KEY, url VARCHAR(255));")
 	if err != nil {
 		log.Errorf("Failed to create database: %s", err)
 	}
@@ -38,7 +38,7 @@ func loadDatabase() {
 }
 
 func queryURL(short string) (string, error) {
-	result, err := database.Query("SELECT long FROM links WHERE short=?;", short)
+	result, err := database.Query("SELECT url FROM links WHERE short=?;", short)
 	if err != nil {
 		return "", err
 	}
