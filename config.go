@@ -12,16 +12,11 @@ import (
 
 // Configuration is a container struct for the configuration.
 type Configuration struct {
-	IP    string    `json:"ip"`
-	Port  int       `json:"port"`
-	SQL   SQLConfig `json:"sql"`
-	Pages Pages     `json:"pages"`
-}
-
-// Pages contains the page file names.
-type Pages struct {
-	Index     string `json:"index"`
-	Unshorted string `json:"unshorten"`
+	TrustHeaders bool      `json:"trust-headers"`
+	URL          string    `json:"url"`
+	IP           string    `json:"ip"`
+	Port         int       `json:"port"`
+	SQL          SQLConfig `json:"sql"`
 }
 
 // SQLConfig is the part of the config where details of the SQL database are stored.

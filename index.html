@@ -5,8 +5,10 @@
 <body>
     <h1>mau\Lu 2.0</h1>
     <form role="form" method="post">
+        {{.Error}}
         <input type="text" name="url" id="url" value="{{.URL}}">
-        <button type="submit" formaction="shorten/short">Shorten</button>
-        <button type="submit" formaction="shorten/google">Google</button>
+        <button type="submit" formaction="query/shorten">Shorten</button>
+        <button type="submit" formaction="query/google">Google</button>
+        <button type="submit" formaction="query/unshorten">Unshorten</button>
     </form>
 </body>
