@@ -27,7 +27,7 @@ func get(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path[1:]
 
 	api := false
-	if r.URL.Query().Get("api") == "true" {
+	if config.AllowAPI && r.URL.Query().Get("api") == "true" {
 		api = true
 	}
 
@@ -63,7 +63,7 @@ func query(w http.ResponseWriter, r *http.Request) {
 	reqURL := r.Form.Get("url")
 
 	api := false
-	if r.URL.Query().Get("api") == "true" {
+	if config.AllowAPI && r.URL.Query().Get("api") == "true" {
 		api = true
 	}
 

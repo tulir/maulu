@@ -1,5 +1,6 @@
 {
     "trust-headers": true,
+    "allow-api": true,
     "favicon": "favicon.ico",
     "url": "https://mau.lu/",
     "ip": "127.0.0.1",

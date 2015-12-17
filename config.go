@@ -14,6 +14,7 @@ import (
 type Configuration struct {
 	TrustHeaders bool      `json:"trust-headers"`
 	Favicon      string    `json:"favicon"`
+	AllowAPI     bool      `json:"allow-api"`
 	URL          string    `json:"url"`
 	IP           string    `json:"ip"`
 	Port         int       `json:"port"`
