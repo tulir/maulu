@@ -6,7 +6,8 @@
     <h1>mau\Lu 2.0</h1>
     <form role="form" method="post">
         {{.Error}}
-        <input style="width: 100%" type="text" name="url" id="url" value="{{.URL}}">
+        <input style="width: 75%" type="text" name="url" id="url" value="{{.URL}}">
+        <input style="width: 20%" type="text" name="short" id="short">
         <br>
         <button type="submit" formaction="query/shorten">Shorten</button>
         <button type="submit" formaction="query/google">Google</button>

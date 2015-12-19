@@ -37,7 +37,7 @@ func loadDatabase() {
 	}
 }
 
-func insert(url string) string {
+func insert(url, ishort string) string {
 	result, err := database.Query("SELECT short FROM links WHERE url=?;", url)
 	if err == nil {
 		for result.Next() {
@@ -51,9 +51,8 @@ func insert(url string) string {
 			}
 		}
 	}
-	rand := randomShortURL()
-	insertURL(rand, url)
-	return rand
+	insertURL(ishort, url)
+	return ishort
 }
 
 func insertURL(short string, url string) error {
