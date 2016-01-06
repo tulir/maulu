@@ -28,7 +28,7 @@ func loadDatabase() {
 		log.Fatalf("Failed to open SQL connection!")
 		os.Exit(2)
 	}
-	result, err := database.Query("CREATE TABLE IF NOT EXISTS links (url VARCHAR(255) PRIMARY KEY, short VARCHAR(20) NOT NULL);")
+	result, err := database.Query("CREATE TABLE IF NOT EXISTS links (url VARCHAR(255), short VARCHAR(20) NOT NULL, redirect VARCHAR(4), PRIMARY KEY(url, redirect));")
 	if err != nil {
 		log.Errorf("Failed to create database: %s", err)
 	}
@@ -37,8 +37,12 @@ func loadDatabase() {
 	}
 }
 
-func insert(url, ishort string) string {
-	result, err := database.Query("SELECT short FROM links WHERE url=?;", url)
+func insert(url, ishort, redirect string) string {
+	redirect = strings.ToLower(redirect)
+	if redirect != "http" && redirect != "html" && redirect != "js" {
+		redirect = "http"
+	}
+	result, err := database.Query("SELECT short FROM links WHERE url=? AND redirect=?;", url, redirect)
 	if err == nil {
 		for result.Next() {
 			if result.Err() != nil {
@@ -51,35 +55,37 @@ func insert(url, ishort string) string {
 			}
 		}
 	}
-	insertURL(ishort, url)
+	insertURL(ishort, url, redirect)
 	return ishort
 }
 
-func insertURL(short string, url string) error {
-	_, err := database.Query("INSERT INTO links VALUES(?, ?);", url, short)
+func insertURL(short, url, redirect string) error {
+	_, err := database.Query("INSERT INTO links VALUES(?, ?, ?);", url, short, redirect)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func queryURL(short string) (string, error) {
-	result, err := database.Query("SELECT url FROM links WHERE short=?;", short)
+func queryURL(short string) (string, string, error) {
+	result, err := database.Query("SELECT url, redirect FROM links WHERE short=?;", short)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer result.Close()
 	for result.Next() {
 		if result.Err() != nil {
-			return "", result.Err()
+			return "", "", result.Err()
 		}
-		var long string
-		result.Scan(&long)
+		var long, redirect string
+		result.Scan(&long, &redirect)
 		if len(long) == 0 {
 			continue
+		} else if len(redirect) == 0 {
+			redirect = "http"
 		}
-		return long, nil
+		return long, redirect, nil
 	}
 	result.Close()
-	return "", errors.New("ID not found")
+	return "", "", errors.New("ID not found")
 }
