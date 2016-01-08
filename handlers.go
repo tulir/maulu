@@ -6,6 +6,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"html/template"
 	log "maunium.net/go/maulogger"
+	"maunium.net/go/maulu/data"
 	"net/http"
 	"net/url"
 	"strings"
@@ -46,7 +47,7 @@ func get(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// Path not recognized. Check if it's a redirect key
 		log.Debugf("%[1]s requested long url of %[2]s", getIP(r), path)
-		url, redirect, err := queryURL(path)
+		url, redirect, err := data.Query(path)
 		if err != nil {
 			// No short url. Redirect to the index
 			log.Warnf("Failed to find redirect from short url %[2]s: %[1]s", err, path)
@@ -79,10 +80,6 @@ func query(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	ip := getIP(r)
 	reqURL := r.Form.Get("url")
-	reqShort := r.Form.Get("short")
-	if len(reqShort) == 0 {
-		reqShort = randomShortURL()
-	}
 
 	api := false
 	if config.AllowAPI && r.URL.Query().Get("api") == "true" {
@@ -102,7 +99,7 @@ func query(w http.ResponseWriter, r *http.Request) {
 			writeError(w, api, "length", "The URL you entered is too long.")
 			return
 		}
-		longURL, _, err := queryURL(shortID)
+		longURL, _, err := data.Query(shortID)
 		if err != nil {
 			log.Warnf("%[1]s queried the target of the non-existent short URL %[2]s", ip, reqURL)
 			writeError(w, api, "notfound", "The short url id %[1]s doesn't exist!", reqURL)
@@ -111,6 +108,17 @@ func query(w http.ResponseWriter, r *http.Request) {
 		log.Debugf("%[1]s queried the target of %[2]s.", ip, reqURL)
 		writeSuccess(w, api, config.URL+"?url="+url.QueryEscape(longURL))
 	} else if action == "shorten" || action == "google" || action == "duckduckgo" {
+		reqShort := r.Form.Get("short")
+		if len(reqShort) == 0 {
+			reqShort = randomShortURL()
+		}
+
+		if !validShortURL(reqShort) {
+			log.Warnf("%[1]s attempted to use invalid characters in a short URL", ip)
+			writeError(w, api, "illegalchars", "The short URL contains illegal characters.")
+			return
+		}
+
 		if action == "google" {
 			reqURL = "http://lmgtfy.com/?q=" + url.QueryEscape(reqURL)
 		} else if action == "duckduckgo" {
@@ -133,14 +141,14 @@ func query(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		str, _, err := queryURL(reqShort)
+		str, _, err := data.Query(reqShort)
 		if (err == nil || len(str) != 0) && str != reqURL {
 			log.Warnf("%[1]s attempted to insert %[3]s into the short url %[2]s, but it is already in use.", ip, reqShort, reqURL)
 			writeError(w, api, "used", "The short url %[1]s is already in use.", reqShort)
 			return
 		}
 
-		resultURL := config.URL + insert(reqURL, reqShort, r.Form.Get("redirect"))
+		resultURL := config.URL + data.Insert(reqURL, reqShort, r.Form.Get("redirect"))
 		log.Debugf("%[1]s shortened %[3]s into %[2]s", ip, reqURL, resultURL)
 		writeSuccess(w, api, config.URL+"?url="+url.QueryEscape(resultURL))
 	} else {
@@ -175,4 +183,14 @@ func writeSuccess(w http.ResponseWriter, api bool, url string) {
 		w.Header().Add("Location", url)
 		w.WriteHeader(http.StatusFound)
 	}
+}
+
+func validShortURL(short string) bool {
+	for _, char := range short {
+		if (char >= 'A' && char <= 'Z') || (char >= 'a' && char <= 'z') || (char >= '0' && char <= '9') || char == '_' || char == ' ' {
+			continue
+		}
+		return false
+	}
+	return true
 }

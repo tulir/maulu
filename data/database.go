@@ -1,43 +1,42 @@
-package main
+package data
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
-	log "maunium.net/go/maulogger"
-	"os"
 	"strings"
 )
 
 var database *sql.DB
 
-func loadDatabase() {
+// LoadDatabase loads the database based on the given configuration.
+func LoadDatabase(conf SQLConfig) error {
 	var err error
-	sqlType := strings.ToLower(config.SQL.Type)
+	sqlType := strings.ToLower(conf.Type)
 	if sqlType == "mysql" {
-		database, err = sql.Open(sqlType, fmt.Sprintf("%[1]s@%[2]s/%[3]s", config.SQL.Authentication.ToString(), config.SQL.Connection.ToString(), config.SQL.Database))
+		database, err = sql.Open(sqlType, fmt.Sprintf("%[1]s@%[2]s/%[3]s", conf.Authentication.ToString(), conf.Connection.ToString(), conf.Database))
 	} else {
-		log.Fatalf("%[1]s is not yet supported.", config.SQL.Type)
-		os.Exit(2)
+		return fmt.Errorf("%[1]s is not yet supported", conf.Type)
 	}
 
 	if err != nil {
-		log.Fatalf("Error while opening SQL connection: %s", err)
-		os.Exit(2)
+		return err
 	} else if database == nil {
-		log.Fatalf("Failed to open SQL connection!")
-		os.Exit(2)
+		return fmt.Errorf("Failed to open SQL connection!")
 	}
 	result, err := database.Query("CREATE TABLE IF NOT EXISTS links (url VARCHAR(255), short VARCHAR(20) NOT NULL, redirect VARCHAR(4), PRIMARY KEY(url, redirect));")
 	if err != nil {
-		log.Errorf("Failed to create database: %s", err)
+		return err
+	} else if result.Err() != nil {
+		return result.Err()
 	}
-	if result.Err() != nil {
-		log.Errorf("Failed to create database: %s", result.Err())
-	}
+	return nil
 }
 
-func insert(url, ishort, redirect string) string {
+// Insert inserts the given URL, short url and redirect type into the database.
+// If the URL has already been shortened with the same redirect type, the already existing short URL will be returned.
+// In any other case, the requested short URL will be returned.
+// Warning: This will NOT check if the short URL is in use.
+func Insert(url, ishort, redirect string) string {
 	redirect = strings.ToLower(redirect)
 	if redirect != "http" && redirect != "html" && redirect != "js" {
 		redirect = "http"
@@ -55,11 +54,12 @@ func insert(url, ishort, redirect string) string {
 			}
 		}
 	}
-	insertURL(ishort, url, redirect)
+	InsertDirect(ishort, url, redirect)
 	return ishort
 }
 
-func insertURL(short, url, redirect string) error {
+// InsertDirect inserts the given values into the database, no questions asked (except by the database itself)
+func InsertDirect(short, url, redirect string) error {
 	_, err := database.Query("INSERT INTO links VALUES(?, ?, ?);", url, short, redirect)
 	if err != nil {
 		return err
@@ -67,7 +67,8 @@ func insertURL(short, url, redirect string) error {
 	return nil
 }
 
-func queryURL(short string) (string, string, error) {
+// Query queries for the given short URL and returns the long URL and redirect type.
+func Query(short string) (string, string, error) {
 	result, err := database.Query("SELECT url, redirect FROM links WHERE short=?;", short)
 	if err != nil {
 		return "", "", err
@@ -87,5 +88,5 @@ func queryURL(short string) (string, string, error) {
 		return long, redirect, nil
 	}
 	result.Close()
-	return "", "", errors.New("ID not found")
+	return "", "", fmt.Errorf("ID not found")
 }

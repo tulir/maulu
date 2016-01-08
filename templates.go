@@ -9,6 +9,7 @@ import (
 var index, redirjs, redirhtml *template.Template
 
 func loadTemplates() {
+	log.Infoln("Loading HTML templates...")
 	var err error
 	index, err = template.ParseFiles("index.html")
 	if err != nil {
@@ -25,4 +26,5 @@ func loadTemplates() {
 		log.Fatalf("Failed to load JavaScrip redirect page: %s", err)
 		os.Exit(3)
 	}
+	log.Debugln("Successfully loaded HTML templates")
 }

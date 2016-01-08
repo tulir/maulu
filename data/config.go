@@ -1,12 +1,10 @@
-package main
+package data
 
 import (
 	"encoding/json"
 	"fmt"
-	flag "github.com/ogier/pflag"
 	"io/ioutil"
 	log "maunium.net/go/maulogger"
-	"os"
 	"strings"
 )
 
@@ -59,26 +57,21 @@ func (auth SQLAuthInfo) ToString() string {
 	return auth.Username
 }
 
-var confPath = flag.StringP("config", "c", "./config.json", "The path of the mau\\Lu configuration file.")
-
-var config *Configuration
-
-func loadConfig() {
-	config = &Configuration{}
+// LoadConfig loads a Configuration from the specified path.
+func LoadConfig(path string) (*Configuration, error) {
+	var config *Configuration
 	// Read the file
-	data, err := ioutil.ReadFile(*confPath)
+	data, err := ioutil.ReadFile(path)
 	// Check if there was an error
 	if err != nil {
-		log.Fatalf("Failed to load config: %[1]s", err)
-		os.Exit(1)
+		return nil, err
 	}
 	// No error, parse the data
 	log.Infof("Reading config data...")
 	err = json.Unmarshal(data, config)
 	// Check if parsing failed
 	if err != nil {
-		log.Fatalf("Failed to load config: %[1]s", err)
-		os.Exit(1)
+		return nil, err
 	}
-	log.Debugf("Successfully loaded config from disk")
+	return config, nil
 }
