@@ -12,15 +12,11 @@ import (
 	"strings"
 )
 
-// OutputSuccess wraps successful mau\Lu API output messages
-type OutputSuccess struct {
-	URL string `json:"url"`
-}
-
-// OutputError wraps errored mau\Lu API output messages
-type OutputError struct {
-	Error     string `json:"error"`
-	ErrorLong string `json:"error-long"`
+// Output wraps mau\Lu API output messages
+type Output struct {
+	URL       string `json:"url,omitempty"`
+	Error     string `json:"error,omitempty"`
+	ErrorLong string `json:"error-long,omitempty"`
 }
 
 func get(w http.ResponseWriter, r *http.Request) {
@@ -159,7 +155,7 @@ func query(w http.ResponseWriter, r *http.Request) {
 
 func writeError(w http.ResponseWriter, api bool, simple, err string, args ...interface{}) {
 	if api {
-		json, err := json.Marshal(OutputError{Error: simple, ErrorLong: fmt.Sprintf(err, args...)})
+		json, err := json.Marshal(Output{Error: simple, ErrorLong: fmt.Sprintf(err, args...)})
 		if err != nil {
 			log.Errorf("Failed to marshal output json: %s", err)
 			return
@@ -173,7 +169,7 @@ func writeError(w http.ResponseWriter, api bool, simple, err string, args ...int
 
 func writeSuccess(w http.ResponseWriter, api bool, url string) {
 	if api {
-		json, err := json.Marshal(OutputSuccess{URL: url})
+		json, err := json.Marshal(Output{URL: url})
 		if err != nil {
 			log.Errorf("Failed to marshal output json: %s", err)
 			return
