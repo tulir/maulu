@@ -4,6 +4,7 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	flag "github.com/ogier/pflag"
+	"html/template"
 	log "maunium.net/go/maulogger"
 	"maunium.net/go/maulu/data"
 	"net/http"
@@ -24,6 +25,8 @@ var debug = flag.Bool("d", false, "Enable to print debug messages to stdout")
 var confPath = flag.StringP("config", "c", "./config.json", "The path of the mau\\Lu configuration file.")
 
 var config *data.Configuration
+
+var templRedirect *template.Template
 
 func main() {
 	flag.Parse()
@@ -67,4 +70,16 @@ func loadDatabase() {
 	}
 
 	log.Debugln("Successfully loaded database.")
+}
+
+func loadTemplates() {
+	log.Infoln("Loading HTML/JS redirect template...")
+
+	var err error
+	templRedirect, err = template.ParseFiles(config.RedirectTemplate)
+	if err != nil {
+		log.Fatalf("Failed to load HTML/JS redirect template: %s", err)
+		os.Exit(3)
+	}
+	log.Debugln("Successfully loaded HTML/JS redirect template.")
 }
