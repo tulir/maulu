@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 )
 
 func getIP(r *http.Request) string {
@@ -39,10 +38,6 @@ func main() {
 	loadConfig()
 	loadTemplates()
 	loadDatabase()
-
-	if !strings.HasSuffix(config.Files.HTMLDirectory, "/") {
-		config.Files.HTMLDirectory = config.Files.HTMLDirectory + "/"
-	}
 
 	log.Infof("Listening on %s:%d", config.IP, config.Port)
 	http.HandleFunc("/query/", query)

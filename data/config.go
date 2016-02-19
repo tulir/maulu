@@ -10,20 +10,12 @@ import (
 
 // Configuration is a container struct for the configuration.
 type Configuration struct {
-	TrustHeaders bool        `json:"trust-headers"`
-	AllowAPI     bool        `json:"allow-api"`
-	URL          string      `json:"url"`
-	IP           string      `json:"ip"`
-	Port         int         `json:"port"`
-	Files        FilesConfig `json:"files"`
-	SQL          SQLConfig   `json:"sql"`
-}
-
-// FilesConfig contains configuration data about HTML files.
-type FilesConfig struct {
-	HTMLDirectory    string            `json:"html-directory"`
-	RedirectTemplate string            `json:"template-redirect"`
-	ErrorPages       map[string]string `json:"error-pages"`
+	TrustHeaders     bool      `json:"trust-headers"`
+	RedirectTemplate string    `json:"redirect-template"`
+	URL              string    `json:"url"`
+	IP               string    `json:"ip"`
+	Port             int       `json:"port"`
+	SQL              SQLConfig `json:"sql"`
 }
 
 // SQLConfig is the part of the config where details of the SQL database are stored.
@@ -79,12 +71,6 @@ func LoadConfig(path string) (*Configuration, error) {
 	// Check if parsing failed
 	if err != nil {
 		return nil, err
-	}
-
-	config.Files.RedirectTemplate = strings.Replace(config.Files.RedirectTemplate, "$htmldir", config.Files.HTMLDirectory, 1)
-
-	for key, val := range config.Files.ErrorPages {
-		config.Files.ErrorPages[key] = strings.Replace(val, "$htmldir", config.Files.HTMLDirectory, 1)
 	}
 
 	return config, nil

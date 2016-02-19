@@ -9,17 +9,11 @@ import (
 var templIndex, templRedirect *template.Template
 
 func loadTemplates() {
-	log.Infoln("Loading HTML templates...")
 	var err error
-	templIndex, err = template.ParseFiles(config.Files.HTMLDirectory + "index.html")
+	templRedirect, err = template.ParseFiles(config.RedirectTemplate)
 	if err != nil {
-		log.Fatalf("Failed to load index page: %s", err)
+		log.Fatalf("Failed to load HTML/JS redirect template: %s", err)
 		os.Exit(3)
 	}
-	templRedirect, err = template.ParseFiles(config.Files.RedirectTemplate)
-	if err != nil {
-		log.Fatalf("Failed to load HTML/JS redirect page: %s", err)
-		os.Exit(3)
-	}
-	log.Debugln("Successfully loaded HTML templates")
+	log.Debugln("Successfully loaded HTML/JS redirect template")
 }

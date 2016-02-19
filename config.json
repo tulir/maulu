@@ -1,16 +1,9 @@
 {
     "trust-headers": true,
-    "allow-api": true,
     "url": "https://mau.lu/",
     "ip": "127.0.0.1",
     "port": 29302,
-    "files": {
-        "html-directory": "html/",
-        "template-redirect": "$htmldir/redirect.html",
-        "error-pages": {
-            "404": "$htmldir/404.html"
-        }
-    },
+    "redirect-template": "redirect.html",
     "sql": {
         "type": "mysql",
         "connection": {
