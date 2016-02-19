@@ -5,11 +5,14 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"html/template"
+	"io/ioutil"
 	log "maunium.net/go/maulogger"
 	"maunium.net/go/maulu/data"
 	"maunium.net/go/mwsutil"
 	"net/http"
 	"net/url"
+	"os"
+	"strconv"
 	"strings"
 )
 
@@ -181,6 +184,53 @@ func writeSuccess(w http.ResponseWriter, api bool, url string) {
 		w.Header().Add("Location", url)
 		w.WriteHeader(http.StatusFound)
 	}
+}
+
+func writeStatus(w http.ResponseWriter, status int) {
+	statusStr := strconv.Itoa(status)
+	val, ok := config.Files.ErrorPages[statusStr]
+	var data []byte
+	var errCode string
+	if ok {
+		_, err := os.Stat(val)
+		if err != nil {
+			if os.IsPermission(err) {
+				errCode = "403"
+			} else {
+				errCode = "404"
+			}
+		} else {
+			data, err = ioutil.ReadFile(val)
+			if err != nil {
+				if os.IsPermission(err) {
+					errCode = "403"
+				} else {
+					errCode = "404"
+				}
+			}
+		}
+	} else {
+		data = []byte(fmt.Sprintf(`
+            <center>
+                <br><br>
+                <h1>Error %[1]s</h1><br>
+            </center>`,
+			statusStr,
+		))
+	}
+	if len(errCode) != 0 {
+		data = []byte(fmt.Sprintf(`
+            <center>
+                <br><br>
+                <h1>Error %[1]s</h1><br>
+                <h3>Additionally, a %[2]s error occurred while loading the error page.</h3>
+            </center>`,
+			statusStr,
+			errCode,
+		))
+	}
+	w.Write(data)
+	w.WriteHeader(status)
 }
 
 func validShortURL(short string) bool {
