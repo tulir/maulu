@@ -28,8 +28,11 @@ var config *data.Configuration
 
 var templRedirect *template.Template
 
-func main() {
+func init() {
 	flag.Parse()
+}
+
+func main() {
 	// Configure the logger
 	log.PrintDebug = *debug
 	log.Fileformat = func(date string, i int) string { return fmt.Sprintf("logs/%[1]s-%02[2]d.log", date, i) }
