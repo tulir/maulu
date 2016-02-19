@@ -75,7 +75,7 @@ func query(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.Action == "unshorten" {
-		if !strings.HasPrefix(req.URL, "https://mau.lu/") {
+		if !strings.HasPrefix(req.URL, config.URL) {
 			log.Warnf("%[1]s attempted to unshorten an invalid URL.", ip)
 			writeError(w, http.StatusBadRequest, "notshortened", "The URL you entered is not a mau\\Lu short URL.")
 			return
@@ -110,7 +110,7 @@ func query(w http.ResponseWriter, r *http.Request) {
 		} else if req.Action == "duckduckgo" {
 			req.URL = "http://lmddgtfy.net/?q=" + strings.Replace(url.QueryEscape(req.URL), "+", " ", -1)
 		} else {
-			if strings.HasPrefix(req.URL, "https://mau.lu") {
+			if strings.HasPrefix(req.URL, config.URL) {
 				log.Warnf("%[1]s attempted to shorten the mau\\Lu url %[2]s", ip, req.URL)
 				writeError(w, http.StatusBadRequest, "already-shortened", "The given URL is already a mau\\Lu URL")
 				return
