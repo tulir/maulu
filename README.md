@@ -1,5 +1,5 @@
 # mau\Lu
-This is a fairly simple URL shortening backend written in Go. The first versions also contain support for a frontend. The code at commit #3fc7b2d002af1da81af6a5cf2d69e8ddac415a69 is confirmed to work with a basic HTML-only frontend. The code at commit #c3b7919f47278ebf68cfe17db1f8278eab9f6d96 has support for more advanced file serving, but was never actually tested.
+This is a fairly simple URL shortening backend written in Go. The first versions also contain support for a frontend. The code at commit #3fc7b2d002af1da81af6a5cf2d69e8ddac415a69 is confirmed to work with a basic HTML-only frontend.
 
 I'll make a proper frontend soon™
 
