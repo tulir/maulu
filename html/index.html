@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>mau\Lu 2.0</title>
@@ -5,18 +6,17 @@
 </head>
 <body>
     <h1>mau\Lu 2.0</h1>
-    <form role="form" method="post">
+    <form action="query/shorten" method="post">
         {{.Error}}
         <input style="width: 75%" type="text" name="url" id="url" value="{{.URL}}">
         <input style="width: 20%" type="text" name="short" id="short">
         <br>
         Redirect type:
         <input type="radio" name="redirect" value="http" checked="checked">HTTP
-        <input type="radio" name="redirect" value="html">HTML
-        <input type="radio" name="redirect" value="js">JavaScript
+        <input type="radio" name="redirect" value="html">HTML/JS
         <input type="hidden" name="html-redirect-time" value=0>
         <br>
-        <button type="submit" formaction="query/shorten">Shorten</button>
+        <button type="submit">Shorten</button>
         <button type="submit" formaction="query/google">Google</button>
         <button type="submit" formaction="query/duckduckgo">DuckDuckGo</button>
         <button type="submit" formaction="query/unshorten">Unshorten</button>

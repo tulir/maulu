@@ -10,13 +10,19 @@ import (
 
 // Configuration is a container struct for the configuration.
 type Configuration struct {
-	TrustHeaders bool      `json:"trust-headers"`
-	Favicon      string    `json:"favicon"`
-	AllowAPI     bool      `json:"allow-api"`
-	URL          string    `json:"url"`
-	IP           string    `json:"ip"`
-	Port         int       `json:"port"`
-	SQL          SQLConfig `json:"sql"`
+	TrustHeaders bool        `json:"trust-headers"`
+	AllowAPI     bool        `json:"allow-api"`
+	URL          string      `json:"url"`
+	IP           string      `json:"ip"`
+	Port         int         `json:"port"`
+	Files        FilesConfig `json:"files"`
+	SQL          SQLConfig   `json:"sql"`
+}
+
+// FilesConfig contains configuration data about HTML files.
+type FilesConfig struct {
+	RedirectTemplate string `json:"template-redirect"`
+	HTMLDirectory    string `json:"html-directory"`
 }
 
 // SQLConfig is the part of the config where details of the SQL database are stored.

@@ -5,10 +5,12 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"html/template"
+	"io/ioutil"
 	log "maunium.net/go/maulogger"
 	"maunium.net/go/maulu/data"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -34,12 +36,19 @@ func get(w http.ResponseWriter, r *http.Request) {
 		queryErr, _ := url.QueryUnescape(r.URL.Query().Get("error"))
 		if len(queryErr) != 0 {
 			queryErr = fmt.Sprintf("<h3>Error: %s</h3>", queryErr)
-			index.Execute(w, struct{ URL, Error interface{} }{queryURL, template.HTML(queryErr)})
+			templIndex.Execute(w, struct{ URL, Error interface{} }{queryURL, template.HTML(queryErr)})
 		} else {
-			index.Execute(w, struct{ URL, Error interface{} }{queryURL, ""})
+			templIndex.Execute(w, struct{ URL, Error interface{} }{queryURL, ""})
 		}
-	} else if path == "favicon.ico" {
-		w.Write(favicon)
+	} else if _, err := os.Stat(config.Files.HTMLDirectory + path); err == nil {
+		data, err := ioutil.ReadFile(config.Files.HTMLDirectory + path)
+		if err != nil {
+			w.Write(data)
+			w.WriteHeader(http.StatusOK)
+		} else {
+			log.Errorf("Couldn't read file %s even though it seems to exist.", path)
+			w.WriteHeader(http.StatusForbidden)
+		}
 	} else {
 		// Path not recognized. Check if it's a redirect key
 		log.Debugf("%[1]s requested long url of %[2]s", getIP(r), path)
@@ -64,10 +73,8 @@ func get(w http.ResponseWriter, r *http.Request) {
 		} else if redirect == "http" {
 			w.Header().Add("Location", url)
 			w.WriteHeader(http.StatusFound)
-		} else if redirect == "html" {
-			redirhtml.Execute(w, struct{ URL interface{} }{url})
-		} else if redirect == "js" {
-			redirhtml.Execute(w, struct{ URL interface{} }{url})
+		} else if redirect == "html" || redirect == "js" {
+			templRedirect.Execute(w, struct{ URL interface{} }{url})
 		}
 	}
 }

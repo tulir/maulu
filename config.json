@@ -1,10 +1,13 @@
 {
     "trust-headers": true,
     "allow-api": true,
-    "favicon": "favicon.ico",
     "url": "https://mau.lu/",
     "ip": "127.0.0.1",
     "port": 29302,
+    "files": {
+        "template-redirect": "html/redirect.html",
+        "html-directory": "html/"
+    },
     "sql": {
         "type": "mysql",
         "connection": {

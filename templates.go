@@ -6,24 +6,19 @@ import (
 	"os"
 )
 
-var index, redirjs, redirhtml *template.Template
+var templIndex, templRedirect *template.Template
 
 func loadTemplates() {
 	log.Infoln("Loading HTML templates...")
 	var err error
-	index, err = template.ParseFiles("index.html")
+	templIndex, err = template.ParseFiles(config.Files.HTMLDirectory + "index.html")
 	if err != nil {
 		log.Fatalf("Failed to load index page: %s", err)
 		os.Exit(3)
 	}
-	redirhtml, err = template.ParseFiles("redirect-html.html")
+	templRedirect, err = template.ParseFiles(config.Files.RedirectTemplate)
 	if err != nil {
-		log.Fatalf("Failed to load HTML redirect page: %s", err)
-		os.Exit(3)
-	}
-	redirjs, err = template.ParseFiles("redirect-js.html")
-	if err != nil {
-		log.Fatalf("Failed to load JavaScrip redirect page: %s", err)
+		log.Fatalf("Failed to load HTML/JS redirect page: %s", err)
 		os.Exit(3)
 	}
 	log.Debugln("Successfully loaded HTML templates")

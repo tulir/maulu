@@ -4,12 +4,12 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	flag "github.com/ogier/pflag"
-	"io/ioutil"
 	log "maunium.net/go/maulogger"
 	"maunium.net/go/maulu/data"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func getIP(r *http.Request) string {
@@ -40,8 +40,9 @@ func main() {
 	loadTemplates()
 	loadDatabase()
 
-	log.Debugln("Loading favicon...")
-	favicon, _ = ioutil.ReadFile(config.Favicon)
+	if !strings.HasSuffix(config.Files.HTMLDirectory, "/") {
+		config.Files.HTMLDirectory = config.Files.HTMLDirectory + "/"
+	}
 
 	log.Infof("Listening on %s:%d", config.IP, config.Port)
 	http.HandleFunc("/query/", query)
