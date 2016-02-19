@@ -112,11 +112,11 @@ func query(w http.ResponseWriter, r *http.Request) {
 		} else {
 			if strings.HasPrefix(req.URL, config.URL) {
 				log.Warnf("%[1]s attempted to shorten the mau\\Lu url %[2]s", ip, req.URL)
-				writeError(w, http.StatusBadRequest, "already-shortened", "The given URL is already a mau\\Lu URL")
+				writeError(w, http.StatusBadRequest, "alreadyshortened", "The given URL is already a mau\\Lu URL")
 				return
 			} else if !strings.HasPrefix(req.URL, "https://") && !strings.HasPrefix(req.URL, "http://") {
 				log.Warnf("%[1]s attempted to shorten an URL with an unidentified protocol", ip)
-				writeError(w, http.StatusBadRequest, "protocol", "Protocol couldn't be identified.")
+				writeError(w, http.StatusBadRequest, "invalidprotocol", "Protocol couldn't be identified.")
 				return
 			}
 		}
