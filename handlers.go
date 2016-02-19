@@ -5,12 +5,11 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"html/template"
-	"io/ioutil"
 	log "maunium.net/go/maulogger"
 	"maunium.net/go/maulu/data"
+	"maunium.net/go/mwsutil"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 )
 
@@ -40,23 +39,19 @@ func get(w http.ResponseWriter, r *http.Request) {
 		} else {
 			templIndex.Execute(w, struct{ URL, Error interface{} }{queryURL, ""})
 		}
-	} else if _, err := os.Stat(config.Files.HTMLDirectory + path); err == nil {
-		data, err := ioutil.ReadFile(config.Files.HTMLDirectory + path)
-		if err != nil {
-			w.Write(data)
-			w.WriteHeader(http.StatusOK)
-		} else {
-			log.Errorf("Couldn't read file %s even though it seems to exist.", path)
-			w.WriteHeader(http.StatusForbidden)
-		}
 	} else {
 		// Path not recognized. Check if it's a redirect key
 		log.Debugf("%[1]s requested long url of %[2]s", getIP(r), path)
 		url, redirect, err := data.Query(path)
 		if err != nil {
 			// No short url. Redirect to the index
-			log.Warnf("Failed to find redirect from short url %[2]s: %[1]s", err, path)
-			writeError(w, api, "notfound", "404: https://mau.lu/%[1]s not found", path)
+			//log.Warnf("Failed to find redirect from short url %[2]s: %[1]s", err, path)
+			//writeError(w, api, "notfound", "404: https://mau.lu/%[1]s not found", path)
+			status, data := mwsutil.ServeFile(config.Files.HTMLDirectory, path)
+			if status == http.StatusOK {
+				w.Write(data)
+			}
+			w.WriteHeader(status)
 			return
 		}
 		// Short url identified. Redirect to long url
