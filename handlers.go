@@ -11,11 +11,18 @@ import (
 	"strings"
 )
 
-// Output wraps mau\Lu API output messages
+// Output wraps mau\Lu output messages
 type Output struct {
 	URL       string `json:"url,omitempty"`
 	Error     string `json:"error,omitempty"`
 	ErrorLong string `json:"error-long,omitempty"`
+}
+
+// Request is a general shortening/unshortening request
+type Request struct {
+	Action       string `json:"action"`
+	URL          string `json:"url"`
+	RequestShort string `json:"short-request,omitempty"`
 }
 
 func get(w http.ResponseWriter, r *http.Request) {
@@ -54,18 +61,26 @@ func query(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	r.ParseForm()
 	ip := getIP(r)
-	reqURL := r.Form.Get("url")
 
-	action := r.URL.Path[len("/query/"):]
-	if action == "unshorten" {
-		if !strings.HasPrefix(reqURL, "https://mau.lu/") {
+	decoder := json.NewDecoder(r.Body)
+	var req Request
+	// Decode the payload.
+	err := decoder.Decode(&req)
+
+	if err != nil || len(req.Action) == 0 || len(req.URL) == 0 {
+		log.Debugf("%[1]s sent an invalid insert request.", ip)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if req.Action == "unshorten" {
+		if !strings.HasPrefix(req.URL, "https://mau.lu/") {
 			log.Warnf("%[1]s attempted to unshorten an invalid URL.", ip)
 			writeError(w, http.StatusBadRequest, "notshortened", "The URL you entered is not a mau\\Lu short URL.")
 			return
 		}
-		shortID := reqURL[len(config.URL):]
+		shortID := req.URL[len(config.URL):]
 		if len(shortID) > 20 {
 			log.Warnf("%[1]s attempted to unshorten an impossibly long short URL", ip)
 			writeError(w, http.StatusBadRequest, "toolong", "The URL you entered is too long.")
@@ -73,59 +88,58 @@ func query(w http.ResponseWriter, r *http.Request) {
 		}
 		longURL, _, err := data.Query(shortID)
 		if err != nil {
-			log.Warnf("%[1]s queried the target of the non-existent short URL %[2]s", ip, reqURL)
-			writeError(w, http.StatusNotFound, "notfound", "The short url id %[1]s doesn't exist!", reqURL)
+			log.Warnf("%[1]s queried the target of the non-existent short URL %[2]s", ip, req.URL)
+			writeError(w, http.StatusNotFound, "notfound", "The short url id %[1]s doesn't exist!", req.URL)
 			return
 		}
-		log.Debugf("%[1]s queried the target of %[2]s.", ip, reqURL)
+		log.Debugf("%[1]s queried the target of %[2]s.", ip, req.URL)
 		writeSuccess(w, longURL)
-	} else if action == "shorten" || action == "google" || action == "duckduckgo" {
-		reqShort := r.Form.Get("short")
-		if len(reqShort) == 0 {
-			reqShort = randomShortURL()
+	} else if req.Action == "shorten" || req.Action == "google" || req.Action == "duckduckgo" {
+		if len(req.RequestShort) == 0 {
+			req.RequestShort = randomShortURL()
 		}
 
-		if !validShortURL(reqShort) {
+		if !validShortURL(req.RequestShort) {
 			log.Warnf("%[1]s attempted to use invalid characters in a short URL", ip)
 			writeError(w, http.StatusBadRequest, "illegalchars", "The short URL contains illegal characters.")
 			return
 		}
 
-		if action == "google" {
-			reqURL = "http://lmgtfy.com/?q=" + url.QueryEscape(reqURL)
-		} else if action == "duckduckgo" {
-			reqURL = "http://lmddgtfy.net/?q=" + strings.Replace(url.QueryEscape(reqURL), "+", " ", -1)
+		if req.Action == "google" {
+			req.URL = "http://lmgtfy.com/?q=" + url.QueryEscape(req.URL)
+		} else if req.Action == "duckduckgo" {
+			req.URL = "http://lmddgtfy.net/?q=" + strings.Replace(url.QueryEscape(req.URL), "+", " ", -1)
 		} else {
-			if strings.HasPrefix(reqURL, "https://mau.lu") {
-				log.Warnf("%[1]s attempted to shorten the mau\\Lu url %[2]s", ip, reqURL)
+			if strings.HasPrefix(req.URL, "https://mau.lu") {
+				log.Warnf("%[1]s attempted to shorten the mau\\Lu url %[2]s", ip, req.URL)
 				writeError(w, http.StatusBadRequest, "already-shortened", "The given URL is already a mau\\Lu URL")
 				return
-			} else if !strings.HasPrefix(reqURL, "https://") && !strings.HasPrefix(reqURL, "http://") {
+			} else if !strings.HasPrefix(req.URL, "https://") && !strings.HasPrefix(req.URL, "http://") {
 				log.Warnf("%[1]s attempted to shorten an URL with an unidentified protocol", ip)
 				writeError(w, http.StatusBadRequest, "protocol", "Protocol couldn't be identified.")
 				return
 			}
 		}
 
-		if len(reqURL) > 1000 {
+		if len(req.URL) > 1000 {
 			log.Warnf("%[1]s attempted to shorten a very long URL", ip)
 			writeError(w, http.StatusBadRequest, "toolong", "The URL you entered is too long.")
 			return
 		}
 
-		str, _, err := data.Query(reqShort)
-		if (err == nil || len(str) != 0) && str != reqURL {
-			log.Warnf("%[1]s attempted to insert %[3]s into the short url %[2]s, but it is already in use.", ip, reqShort, reqURL)
-			writeError(w, http.StatusConflict, "alreadyinuse", "The short url %[1]s is already in use.", reqShort)
+		str, _, err := data.Query(req.RequestShort)
+		if (err == nil || len(str) != 0) && str != req.URL {
+			log.Warnf("%[1]s attempted to insert %[3]s into the short url %[2]s, but it is already in use.", ip, req.RequestShort, req.URL)
+			writeError(w, http.StatusConflict, "alreadyinuse", "The short url %[1]s is already in use.", req.RequestShort)
 			return
 		}
 
-		resultURL := config.URL + data.Insert(reqURL, reqShort, r.Form.Get("redirect"))
-		log.Debugf("%[1]s shortened %[3]s into %[2]s", ip, reqURL, resultURL)
+		resultURL := config.URL + data.Insert(req.URL, req.RequestShort, r.Form.Get("redirect"))
+		log.Debugf("%[1]s shortened %[3]s into %[2]s", ip, req.URL, resultURL)
 		writeSuccess(w, resultURL)
 	} else {
-		log.Warnf("%[1]s attempted to use an unidentified action: %[2]s", ip, action)
-		writeError(w, http.StatusNotFound, "action", "Invalid action \"%[1]s\"", action)
+		log.Warnf("%[1]s attempted to use an unidentified action: %[2]s", ip, req.Action)
+		writeError(w, http.StatusNotFound, "action", "Invalid action \"%[1]s\"", req.Action)
 	}
 }
 
