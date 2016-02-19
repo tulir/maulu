@@ -11,8 +11,8 @@ import (
 	"strings"
 )
 
-// Output wraps mau\Lu output messages
-type Output struct {
+// Response is a general response
+type Response struct {
 	Result    string `json:"result,omitempty"`
 	Error     string `json:"error,omitempty"`
 	ErrorLong string `json:"error-long,omitempty"`
@@ -144,7 +144,7 @@ func query(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeError(w http.ResponseWriter, errcode int, simple, errmsg string, args ...interface{}) {
-	json, err := json.Marshal(Output{Error: simple, ErrorLong: fmt.Sprintf(errmsg, args...)})
+	json, err := json.Marshal(Response{Error: simple, ErrorLong: fmt.Sprintf(errmsg, args...)})
 	if err != nil {
 		log.Errorf("Failed to marshal output json: %s", err)
 		return
@@ -154,7 +154,7 @@ func writeError(w http.ResponseWriter, errcode int, simple, errmsg string, args 
 }
 
 func writeSuccess(w http.ResponseWriter, result string) {
-	json, err := json.Marshal(Output{Result: result})
+	json, err := json.Marshal(Response{Result: result})
 	if err != nil {
 		log.Errorf("Failed to marshal output json: %s", err)
 		return
