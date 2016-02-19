@@ -5,8 +5,11 @@
     "ip": "127.0.0.1",
     "port": 29302,
     "files": {
-        "template-redirect": "html/redirect.html",
-        "html-directory": "html/"
+        "html-directory": "html/",
+        "template-redirect": "$htmldir/redirect.html",
+        "error-pages": {
+            "404": "$htmldir/404.html"
+        }
     },
     "sql": {
         "type": "mysql",

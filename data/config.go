@@ -21,8 +21,9 @@ type Configuration struct {
 
 // FilesConfig contains configuration data about HTML files.
 type FilesConfig struct {
-	RedirectTemplate string `json:"template-redirect"`
-	HTMLDirectory    string `json:"html-directory"`
+	HTMLDirectory    string            `json:"html-directory"`
+	RedirectTemplate string            `json:"template-redirect"`
+	ErrorPages       map[string]string `json:"error-pages"`
 }
 
 // SQLConfig is the part of the config where details of the SQL database are stored.
@@ -79,5 +80,12 @@ func LoadConfig(path string) (*Configuration, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	config.Files.RedirectTemplate = strings.Replace(config.Files.RedirectTemplate, "$htmldir", config.Files.HTMLDirectory, 1)
+
+	for key, val := range config.Files.ErrorPages {
+		config.Files.ErrorPages[key] = strings.Replace(val, "$htmldir", config.Files.HTMLDirectory, 1)
+	}
+
 	return config, nil
 }
