@@ -54,7 +54,7 @@ func get(w http.ResponseWriter, r *http.Request) {
 			if status == http.StatusOK {
 				w.Write(data)
 			}
-			w.WriteHeader(status)
+			writeStatus(w, status)
 			return
 		}
 		// Short url identified. Redirect to long url
@@ -187,6 +187,10 @@ func writeSuccess(w http.ResponseWriter, api bool, url string) {
 }
 
 func writeStatus(w http.ResponseWriter, status int) {
+	if status < 400 {
+		w.WriteHeader(status)
+		return
+	}
 	statusStr := strconv.Itoa(status)
 	val, ok := config.Files.ErrorPages[statusStr]
 	var data []byte
