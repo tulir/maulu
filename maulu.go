@@ -73,13 +73,13 @@ func loadDatabase() {
 }
 
 func loadTemplates() {
-	log.Infoln("Loading HTML/JS redirect template...")
+	log.Infoln("Loading HTML redirect template...")
 
 	var err error
 	templRedirect, err = template.ParseFiles(config.RedirectTemplate)
 	if err != nil {
-		log.Fatalf("Failed to load HTML/JS redirect template: %s", err)
+		log.Fatalf("Failed to load HTML redirect template: %s", err)
 		os.Exit(3)
 	}
-	log.Debugln("Successfully loaded HTML/JS redirect template.")
+	log.Debugln("Successfully loaded HTML redirect template.")
 }

@@ -22,20 +22,22 @@ func get(w http.ResponseWriter, r *http.Request) {
 	// Cut out the prefix slash
 	path := r.URL.Path[1:]
 
-	// Path not recognized. Check if it's a redirect key
 	log.Debugf("%[1]s requested long url of %[2]s", getIP(r), path)
 	url, redirect, err := data.Query(path)
+
 	if err != nil {
-		// No short url. Redirect to the index
+		// No short url found
 		log.Warnf("Failed to find redirect from short url %[2]s: %[1]s", err, path)
 		writeError(w, http.StatusNotFound, "notfound", "404: %[1]s is not a valid short url", path)
 		return
 	}
-	// Short url identified. Redirect to long url
+
 	if redirect == "http" {
+		// Short URL with HTTP redirect found.
 		w.Header().Add("Location", url)
 		w.WriteHeader(http.StatusFound)
-	} else if redirect == "html" || redirect == "js" {
+	} else if redirect == "html" {
+		// Short URL with HTML redirect found.
 		templRedirect.Execute(w, struct{ URL interface{} }{url})
 		w.WriteHeader(http.StatusOK)
 	}
