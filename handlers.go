@@ -19,6 +19,11 @@ type Output struct {
 }
 
 func get(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.Header().Add("Allow", "GET")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	// Cut out the prefix slash
 	path := r.URL.Path[1:]
 
@@ -44,6 +49,11 @@ func get(w http.ResponseWriter, r *http.Request) {
 }
 
 func query(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		w.Header().Add("Allow", "POST")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	r.ParseForm()
 	ip := getIP(r)
 	reqURL := r.Form.Get("url")
