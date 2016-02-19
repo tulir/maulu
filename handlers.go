@@ -13,7 +13,7 @@ import (
 
 // Output wraps mau\Lu output messages
 type Output struct {
-	URL       string `json:"url,omitempty"`
+	Result    string `json:"result,omitempty"`
 	Error     string `json:"error,omitempty"`
 	ErrorLong string `json:"error-long,omitempty"`
 }
@@ -153,8 +153,8 @@ func writeError(w http.ResponseWriter, errcode int, simple, errmsg string, args 
 	w.WriteHeader(errcode)
 }
 
-func writeSuccess(w http.ResponseWriter, url string) {
-	json, err := json.Marshal(Output{URL: url})
+func writeSuccess(w http.ResponseWriter, result string) {
+	json, err := json.Marshal(Output{Result: result})
 	if err != nil {
 		log.Errorf("Failed to marshal output json: %s", err)
 		return
