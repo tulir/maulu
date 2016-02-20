@@ -66,8 +66,8 @@ func get(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusFound)
 	} else if redirect == "html" {
 		// Short URL with HTML redirect found.
-		templRedirect.Execute(w, struct{ URL interface{} }{url})
 		w.WriteHeader(http.StatusOK)
+		templRedirect.Execute(w, struct{ URL interface{} }{url})
 	}
 }
 
@@ -171,8 +171,8 @@ func writeError(w http.ResponseWriter, errcode int, simple, errmsg string, args 
 		log.Errorf("Failed to marshal output json: %s", err)
 		return
 	}
-	w.Write(json)
 	w.WriteHeader(errcode)
+	w.Write(json)
 }
 
 func writeSuccess(w http.ResponseWriter, result string) {
