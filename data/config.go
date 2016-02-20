@@ -75,7 +75,7 @@ func (auth SQLAuthInfo) ToString() string {
 
 // LoadConfig loads a Configuration from the specified path.
 func LoadConfig(path string) (*Configuration, error) {
-	var config *Configuration
+	var config = &Configuration{}
 	// Read the file
 	data, err := ioutil.ReadFile(path)
 	// Check if there was an error
