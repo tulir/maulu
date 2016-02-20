@@ -127,20 +127,20 @@ func query(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if strings.HasPrefix(req.URL, config.URL) {
+			log.Warnf("%[1]s attempted to shorten the mau\\Lu url %[2]s", ip, req.URL)
+			writeError(w, http.StatusBadRequest, "alreadyshortened", "The given URL is already a mau\\Lu URL")
+			return
+		}
+
 		if req.Action == "google" {
 			req.URL = "http://lmgtfy.com/?q=" + url.QueryEscape(req.URL)
 		} else if req.Action == "duckduckgo" {
 			req.URL = "http://lmddgtfy.net/?q=" + strings.Replace(url.QueryEscape(req.URL), "+", " ", -1)
-		} else {
-			if strings.HasPrefix(req.URL, config.URL) {
-				log.Warnf("%[1]s attempted to shorten the mau\\Lu url %[2]s", ip, req.URL)
-				writeError(w, http.StatusBadRequest, "alreadyshortened", "The given URL is already a mau\\Lu URL")
-				return
-			} else if !strings.HasPrefix(req.URL, "https://") && !strings.HasPrefix(req.URL, "http://") {
-				log.Warnf("%[1]s attempted to shorten an URL with an unidentified protocol", ip)
-				writeError(w, http.StatusBadRequest, "invalidprotocol", "Protocol couldn't be identified.")
-				return
-			}
+		} else if !strings.HasPrefix(req.URL, "https://") && !strings.HasPrefix(req.URL, "http://") {
+			log.Warnf("%[1]s attempted to shorten an URL with an unidentified protocol", ip)
+			writeError(w, http.StatusBadRequest, "invalidprotocol", "Protocol couldn't be identified.")
+			return
 		}
 
 		if len(req.URL) > 255 {
