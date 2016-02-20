@@ -37,6 +37,7 @@ type Response struct {
 type Request struct {
 	Action       string `json:"action"`
 	URL          string `json:"url"`
+	RedirectType string `json:"redirect-type,omitempty"`
 	RequestShort string `json:"short-request,omitempty"`
 }
 
@@ -114,6 +115,12 @@ func query(w http.ResponseWriter, r *http.Request) {
 			req.RequestShort = randomShortURL()
 		}
 
+		if req.RedirectType == "js" {
+			req.RedirectType = "html"
+		} else if len(req.RedirectType) == 0 || (req.RedirectType != "http" && req.RedirectType != "html") {
+			req.RedirectType = "http"
+		}
+
 		if !validShortURL(req.RequestShort) {
 			log.Warnf("%[1]s attempted to use invalid characters in a short URL", ip)
 			writeError(w, http.StatusBadRequest, "illegalchars", "The short URL contains illegal characters.")
@@ -149,7 +156,7 @@ func query(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		resultURL := config.URL + data.Insert(req.URL, req.RequestShort, r.Form.Get("redirect"))
+		resultURL := config.URL + data.Insert(req.URL, req.RequestShort, req.RedirectType)
 		log.Debugf("%[1]s shortened %[3]s into %[2]s", ip, req.URL, resultURL)
 		writeSuccess(w, resultURL)
 	} else {
