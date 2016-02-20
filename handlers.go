@@ -143,7 +143,7 @@ func query(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		if len(req.URL) > 1000 {
+		if len(req.URL) > 255 {
 			log.Warnf("%[1]s attempted to shorten a very long URL", ip)
 			writeError(w, http.StatusBadRequest, "toolong", "The URL you entered is too long.")
 			return
