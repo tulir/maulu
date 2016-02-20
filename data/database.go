@@ -49,6 +49,18 @@ func LoadDatabase(conf SQLConfig) error {
 	return nil
 }
 
+// DeleteShort deletes all the entries with the given short URL.
+func DeleteShort(short string) error {
+	_, err := database.Query("DELETE FROM links WHERE short=?", short)
+	return err
+}
+
+// DeleteURL deletes all the entries pointing to the given URL.
+func DeleteURL(url string) error {
+	_, err := database.Query("DELETE FROM links WHERE url=?", url)
+	return err
+}
+
 // Insert inserts the given URL, short url and redirect type into the database.
 // If the URL has already been shortened with the same redirect type, the already existing short URL will be returned.
 // In any other case, the requested short URL will be returned.

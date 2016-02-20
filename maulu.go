@@ -60,6 +60,8 @@ func main() {
 	loadTemplates()
 	loadDatabase()
 
+	go stdinListen()
+
 	log.Infof("Listening on %s:%d", config.IP, config.Port)
 	http.HandleFunc("/query/", query)
 	http.HandleFunc("/", get)
