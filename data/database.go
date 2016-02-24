@@ -44,20 +44,22 @@ func LoadDatabase(conf SQLConfig) error {
 	if err != nil {
 		return err
 	} else if result.Err() != nil {
+		result.Close()
 		return result.Err()
 	}
+	result.Close()
 	return nil
 }
 
 // DeleteShort deletes all the entries with the given short URL.
 func DeleteShort(short string) error {
-	_, err := database.Query("DELETE FROM links WHERE short=?", short)
+	_, err := database.Exec("DELETE FROM links WHERE short=?", short)
 	return err
 }
 
 // DeleteURL deletes all the entries pointing to the given URL.
 func DeleteURL(url string) error {
-	_, err := database.Query("DELETE FROM links WHERE url=?", url)
+	_, err := database.Exec("DELETE FROM links WHERE url=?", url)
 	return err
 }
 
@@ -72,6 +74,7 @@ func Insert(url, ishort, redirect string) string {
 	}
 	result, err := database.Query("SELECT short FROM links WHERE url=? AND redirect=?;", url, redirect)
 	if err == nil {
+		defer result.Close()
 		for result.Next() {
 			if result.Err() != nil {
 				break
@@ -89,7 +92,7 @@ func Insert(url, ishort, redirect string) string {
 
 // InsertDirect inserts the given values into the database, no questions asked (except by the database itself)
 func InsertDirect(short, url, redirect string) error {
-	_, err := database.Query("INSERT INTO links VALUES(?, ?, ?);", url, short, redirect)
+	_, err := database.Exec("INSERT INTO links VALUES(?, ?, ?);", url, short, redirect)
 	if err != nil {
 		return err
 	}
