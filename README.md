@@ -1,8 +1,8 @@
-# mau\Lu
+# mau**\Lu**
 ## Introduction
-mau\Lu is a fairly simple URL shortening backend written in Go. The first versions also contain support for a frontend. The code at commit 3fc7b2d002af1da81af6a5cf2d69e8ddac415a69 is confirmed to work with a basic HTML-only frontend.
+mau**\Lu** is a fairly simple URL shortening backend written in Go. The first versions also contain support for a frontend. The code at commit 3fc7b2d002af1da81af6a5cf2d69e8ddac415a69 is confirmed to work with a basic HTML-only frontend.
 
-I'll make a proper frontend soon™
+A proper frontend can be found from [mau.lu](https://mau.lu/)
 
 ## API
 ### Requests
