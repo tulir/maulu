@@ -37,7 +37,7 @@ func getIP(r *http.Request) string {
 var favicon []byte
 
 var debug = flag.BoolP("debug", "d", false, "Enable to print debug messages to stdout")
-var confPath = flag.StringP("config", "c", "./config.json", "The path of the mau\\Lu configuration file.")
+var confPath = flag.StringP("config", "c", "/etc/maulu/config.json", "The path of the mau\\Lu configuration file.")
 
 var config *data.Configuration
 

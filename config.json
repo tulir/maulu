@@ -1,6 +1,6 @@
 {
     "trust-headers": true,
-    "url": "https://mau.lu/",
+    "url": "https://localhost/",
     "ip": "127.0.0.1",
     "port": 29302,
     "redirect-template": "redirect.html",
