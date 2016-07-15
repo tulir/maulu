@@ -1,16 +1,12 @@
-maulu: $(shell ls *.go)
-	go install
+build:
+	go build -o maulu
 
-compile: $(shell ls *.go)
-	env GOOS=linux GOARCH=amd64 go build -v
+package-prep: build
+	cp maulu package/usr/bin/
+	cp config.json package/etc/maulu/
 
-package: compile maulu $(shell ls *.html)
-	tar cvfJ maulu.tar.xz maulu *.html
-
-maumain: package
-	scp maulu.tar.xz main:Maulu/
-
-production: maumain clean
+package: package-prep
+	dpkg-deb --build package maulu.deb > /dev/null
 
 clean:
-	rm -f maulu maulu.tar.xz
+	rm -f maulu maulu.deb package/usr/bin/maulu package/etc/maulu/config.json

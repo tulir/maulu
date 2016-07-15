@@ -1,0 +1,8 @@
+[Unit]
+Description=A simple URL shortening backend.
+
+[Service]
+ExecStart=/usr/bin/maulu
+
+[Install]
+WantedBy=multi-user.target
