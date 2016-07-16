@@ -3,7 +3,7 @@
     "url": "https://localhost/",
     "ip": "127.0.0.1",
     "port": 29302,
-    "redirect-template": "redirect.html",
+    "redirect-template": "/etc/maulu/redirect.html",
     "sql": {
         "type": "mysql",
         "connection": {
