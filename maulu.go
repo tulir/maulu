@@ -38,6 +38,7 @@ var favicon []byte
 
 var debug = flag.BoolP("debug", "d", false, "Enable to print debug messages to stdout")
 var confPath = flag.StringP("config", "c", "/etc/maulu/config.json", "The path of the mau\\Lu configuration file.")
+var logPath = flag.StringP("logs", "l", "/var/log/maulu", "The path to store log files in")
 
 var config *data.Configuration
 
@@ -50,7 +51,7 @@ func init() {
 func main() {
 	// Configure the logger
 	log.PrintDebug = *debug
-	log.Fileformat = func(date string, i int) string { return fmt.Sprintf("logs/%[1]s-%02[2]d.log", date, i) }
+	log.Fileformat = func(date string, i int) string { return fmt.Sprintf("%[3]s/%[1]s-%02[2]d.log", date, i, *logPath) }
 
 	// Initialize the logger
 	log.Init()
