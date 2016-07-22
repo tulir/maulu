@@ -5,4 +5,4 @@ Description=A simple URL shortening backend.
 ExecStart=/usr/bin/maulu
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=network.target
