@@ -40,7 +40,7 @@ func LoadDatabase(conf SQLConfig) error {
 	} else if database == nil {
 		return fmt.Errorf("Failed to open SQL connection!")
 	}
-	result, err := database.Query("CREATE TABLE IF NOT EXISTS links (url VARCHAR(255), short VARCHAR(20) NOT NULL, redirect VARCHAR(4), PRIMARY KEY(url, redirect));")
+	result, err := database.Query("CREATE TABLE IF NOT EXISTS links (url VARCHAR(767), short VARCHAR(20) NOT NULL, redirect VARCHAR(4), PRIMARY KEY(url, redirect));")
 	if err != nil {
 		return err
 	} else if result.Err() != nil {
