@@ -1,5 +1,5 @@
 # mau\Lu
-[![License](http://img.shields.io/:license-gpl3-blue.svg?style=flat-square)](http://www.gnu.org/licenses/gpl-3.0.html)
+[![License](http://img.shields.io/:license-agpl3-blue.svg?style=flat-square)](http://www.gnu.org/licenses/agpl-3.0.html)
 
 mau\Lu is a fairly simple URL shortening backend written in Go. The first versions also contain support for a frontend. The code at commit [3fc7b2d](https://github.com/tulir293/maulu/commit/3fc7b2d002af1da81af6a5cf2d69e8ddac415a69) is confirmed to work with a basic HTML-only frontend.
 

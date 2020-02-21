@@ -1,0 +1,219 @@
+openapi: 3.0.1
+info:
+  title: mau\Lu
+  description: A fairly simple URL shortening backend written in Go
+  contact:
+    email: tulir@maunium.net
+  license:
+    name: GNU Affero General Public License Version 3
+    url: https://www.gnu.org/licenses/agpl-3.0.html
+  version: 2.0.0
+servers:
+  - url: https://mau.lu
+components:
+  schemas:
+    ShortenRequest:
+      type: object
+      required:
+        - url
+      properties:
+        type:
+          type: string
+          description: "The type of shortening to do"
+          enum:
+            - url
+            - google
+            - duckduckgo
+        url:
+          type: string
+          description: "The URL or search query to shorten"
+          example: https://example.com
+        redirect:
+          type: string
+          description: "The redirect type"
+          enum:
+            - http
+            - html
+        short:
+          type: string
+          description: "The requested short URL"
+          example: foo
+    URLInfo:
+      type: object
+      properties:
+        url:
+          type: string
+          description: "The URL to shorten"
+          example: https://example.com
+        redirect:
+          type: string
+          description: "The redirect type"
+          enum:
+            - http
+            - html
+        short:
+          type: string
+          description: "The requested short URL"
+          example: foo
+  responses:
+    ErrorBadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errcode:
+                type: string
+                description: "A machine-readable error code"
+                enum:
+                  - NOT_JSON
+                  - MISSING_URL
+                  - UNKNOWN_REDIRECT_TYPE
+                  - ILLEGAL_CHARACTERS
+                  - ALREADY_SHORTENED
+                  - INVALID_URL
+                  - ILLEGAL_SCHEME
+              error:
+                type: string
+                description: "A human-readable error message"
+                example: Request body is not JSON
+    ErrorNotFound:
+      description: URL not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errcode:
+                type: string
+                description: "A machine-readable error code"
+                enum:
+                  - NOT_FOUND
+              error:
+                type: string
+                description: "A human-readable error message"
+                example: foo is not a valid short url
+    ErrorConflict:
+      description: Requested short URL already exists
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errcode:
+                type: string
+                description: "A machine-readable error code"
+                enum:
+                  - ALREADY_IN_USE
+              error:
+                type: string
+                description: "A human-readable error message"
+                example: The short url foo is already in use.
+    ErrorTooLong:
+      description: Given URL is too long
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errcode:
+                type: string
+                description: "A machine-readable error code"
+                enum:
+                  - TOO_LONG
+              error:
+                type: string
+                description: "A human-readable error message"
+                example: The URL you entered is too long
+    Exists:
+      description: Short link already existed to same target
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/URLInfo"
+    Created:
+      description: Short link created
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/URLInfo"
+paths:
+  /api/shorten:
+    post:
+      summary: Shorten a URL
+      operationId: shorten
+      requestBody:
+        description: The URL and extra information to shorten
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShortenRequest'
+        required: true
+      responses:
+        200:
+          $ref: "#/components/responses/Exists"
+        201:
+          $ref: "#/components/responses/Created"
+        400:
+          $ref: "#/components/responses/ErrorBadRequest"
+        409:
+          $ref: "#/components/responses/ErrorConflict"
+        413:
+          $ref: "#/components/responses/ErrorTooLong"
+  /{short}:
+    parameters:
+      - in: path
+        name: short
+        required: true
+        schema:
+          type: string
+          description: The short URL to get or create
+          pattern: "[a-zA-Z0-9.-_ ]+"
+    get:
+      summary: Get the target of a short URL
+      operationId: unshorten
+      responses:
+        200:
+          description: URL found and redirect type is HTML, or user requested JSON output.
+          content:
+            text/html:
+              schema:
+                type: string
+            application/json:
+              schema:
+                $ref: "#/components/schemas/URLInfo"
+        301:
+          description: URL found and redirect type is HTTP.
+          headers:
+            Location:
+              schema:
+                type: string
+              description: The target of the requested short URL
+        404:
+          $ref: "#/components/responses/ErrorNotFound"
+    put:
+      summary: Shorten a URL
+      operationId: shortenPut
+      requestBody:
+        description: The URL and extra information to shorten
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShortenRequest'
+          text/plain:
+            schema:
+              type: string
+              description: The URL to shorten as plain text
+        required: true
+      responses:
+        200:
+          $ref: "#/components/responses/Exists"
+        201:
+          $ref: "#/components/responses/Created"
+        400:
+          $ref: "#/components/responses/ErrorBadRequest"
+        409:
+          $ref: "#/components/responses/ErrorConflict"
+        413:
+          $ref: "#/components/responses/ErrorTooLong"

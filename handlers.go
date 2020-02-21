@@ -46,8 +46,8 @@ type Error struct {
 type ShortenRequest struct {
 	Type         string `json:"type"`
 	URL          string `json:"url"`
-	RedirectType string `json:"redirect-type,omitempty"`
-	RequestShort string `json:"short-request,omitempty"`
+	RedirectType string `json:"redirect,omitempty"`
+	RequestShort string `json:"short,omitempty"`
 }
 
 type RedirectTemplate struct {
