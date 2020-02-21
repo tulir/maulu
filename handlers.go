@@ -268,14 +268,14 @@ func actuallyShorten(w http.ResponseWriter, ip string, req ShortenRequest) {
 		return
 	}
 
-	insertResult, err := data.Insert(req.URL, req.RequestShort, req.RedirectType)
+	insertResult, existing, err := data.Insert(req.URL, req.RequestShort, req.RedirectType)
 	if err != nil {
 		log.Errorfln("Error inserting %v: %v", req, err)
 		writeError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "The server encountered an error")
 		return
 	}
 	status := http.StatusCreated
-	if str != "" {
+	if str != "" || existing {
 		status = http.StatusOK
 	}
 	log.Debugfln("%s shortened %s into %s", ip, req.URL, insertResult)

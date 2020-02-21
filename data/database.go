@@ -63,7 +63,7 @@ func DeleteURL(url string) error {
 // If the URL has already been shortened with the same redirect type, the already existing short URL will be returned.
 // In any other case, the requested short URL will be returned.
 // Warning: This will NOT check if the short URL is in use.
-func Insert(url, ishort, redirect string) (string, error) {
+func Insert(url, ishort, redirect string) (string, bool, error) {
 	redirect = strings.ToLower(redirect)
 	if redirect != "http" && redirect != "html" {
 		redirect = "http"
@@ -78,12 +78,12 @@ func Insert(url, ishort, redirect string) (string, error) {
 			var short string
 			_ = result.Scan(&short)
 			if len(short) != 0 {
-				return short, nil
+				return short, true, nil
 			}
 		}
 	}
 	err = InsertDirect(ishort, url, redirect)
-	return ishort, err
+	return ishort, false, err
 }
 
 // InsertDirect inserts the given values into the database, no questions asked (except by the database itself)
