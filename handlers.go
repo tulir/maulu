@@ -313,7 +313,7 @@ func validShortURL(short string) bool {
 		return false
 	}
 	for _, char := range short {
-		if (char >= 'a' && char <= 'z') || (char >= '0' && char <= '9') || char == '_' || char == ' ' || char == '-' || char == '.' {
+		if (char >= 'a' && char <= 'z') || (char >= '0' && char <= '9') || char == '_' || char == ' ' || char == '-' {
 			continue
 		}
 		return false

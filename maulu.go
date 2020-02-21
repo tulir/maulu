@@ -77,9 +77,9 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/api/shorten", shorten).Methods(http.MethodPost, http.MethodOptions)
 	r.HandleFunc("/api/unshorten", unshorten).Methods(http.MethodPost, http.MethodOptions)
-	r.HandleFunc("/{short:[a-zA-Z0-9.-_ ]+}", get).Methods(http.MethodGet, http.MethodHead)
-	r.HandleFunc("/{short:[a-zA-Z0-9.-_ ]+}", put).Methods(http.MethodPut)
-	r.HandleFunc("/{short:[a-zA-Z0-9.-_ ]+}", options).Methods(http.MethodOptions)
+	r.HandleFunc("/{short:[a-zA-Z0-9-_ ]+}", get).Methods(http.MethodGet, http.MethodHead)
+	r.HandleFunc("/{short:[a-zA-Z0-9-_ ]+}", put).Methods(http.MethodPut)
+	r.HandleFunc("/{short:[a-zA-Z0-9-_ ]+}", options).Methods(http.MethodOptions)
 	err := http.ListenAndServe(fmt.Sprintf("%s:%d", config.IP, config.Port), r)
 	if err != nil {
 		log.Fatalln("Fatal error listening:", err)

@@ -219,7 +219,7 @@ paths:
         schema:
           type: string
           description: The short URL to get or create
-          pattern: "[a-zA-Z0-9.-_ ]+"
+          pattern: "[a-zA-Z0-9-_ ]+"
     get:
       summary: Get the target of a short URL
       operationId: unshortenDirect
