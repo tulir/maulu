@@ -1,22 +1,18 @@
-image: golang:1.6
-
-before_script:
-  - "go get -u github.com/go-sql-driver/mysql"
-  - "go get -u github.com/ogier/pflag"
-  - "go get -u maunium.net/go/maulogger"
-  - "ln -s /builds/Tulir293/maulu /go/src/maunium.net/go/maulu"
+image: golang:1.13
 
 build:
   script:
-    - "env GOOS=linux GOARCH=amd64 go build -o maulu"
-    - "env GOOS=windows GOARCH=amd64 go build -o maulu.exe"
+    - env GOOS=linux GOARCH=amd64 go build -o maulu_linux_amd64
+    - env GOOS=linux GOARCH=arm64 go build -o maulu_linux_arm
+    - env GOOS=linux GOARCH=arm go build -o maulu_linux_arm64
   stage: build
   tags:
     - golang
   artifacts:
     paths:
-    - maulu
-    - maulu.exe
-    - LICENSE
-    - README.md
-    - config.json
+      - maulu_linux_amd64
+      - maulu_linux_arm
+      - maulu_linux_arm64
+      - LICENSE
+      - README.md
+      - config.json

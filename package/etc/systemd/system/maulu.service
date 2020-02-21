@@ -1,5 +1,5 @@
 [Unit]
-Description=A simple URL shortening backend.
+Description=mau\Lu - A simple URL shortening backend
 
 [Service]
 ExecStart=/usr/bin/maulu

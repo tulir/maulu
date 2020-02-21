@@ -1,20 +1,8 @@
 {
-    "trust-headers": true,
-    "url": "https://localhost/",
+    "trust-headers": false,
+    "url": "http://localhost",
     "ip": "127.0.0.1",
     "port": 29302,
-    "redirect-template": "/etc/maulu/redirect.html",
-    "sql": {
-        "type": "mysql",
-        "connection": {
-            "mode": "tcp",
-            "ip": "127.0.0.1",
-            "port": 3306
-        },
-        "authentication": {
-            "username": "root",
-            "password": "password"
-        },
-        "database": "maulu"
-    }
+    "redirect-template": "redirect.html",
+    "database": "maulu.db"
 }

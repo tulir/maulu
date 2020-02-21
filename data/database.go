@@ -1,65 +1,61 @@
 // mau\Lu - A simple URL shortening backend.
-// Copyright (C) 2016 Tulir Asokan
+// Copyright (C) 2020 Tulir Asokan
 //
 // This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
+// it under the terms of the GNU Affero General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-// Package data contains database and configuration parsing related things
 package data
 
 import (
 	"database/sql"
 	"fmt"
 	"strings"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var database *sql.DB
 
 // LoadDatabase loads the database based on the given configuration.
-func LoadDatabase(conf SQLConfig) error {
+func LoadDatabase(path string) error {
 	var err error
-	sqlType := strings.ToLower(conf.Type)
-	if sqlType == "mysql" {
-		database, err = sql.Open(sqlType, fmt.Sprintf("%[1]s@%[2]s/%[3]s", conf.Authentication.ToString(), conf.Connection.ToString(), conf.Database))
-	} else {
-		return fmt.Errorf("%[1]s is not yet supported", conf.Type)
-	}
-
+	database, err = sql.Open("sqlite3", path)
 	if err != nil {
 		return err
 	} else if database == nil {
-		return fmt.Errorf("Failed to open SQL connection!")
+		return fmt.Errorf("failed to open SQL connection")
 	}
-	result, err := database.Query("CREATE TABLE IF NOT EXISTS links (url VARCHAR(767), short VARCHAR(20) NOT NULL, redirect VARCHAR(4), PRIMARY KEY(url, redirect));")
+	_, err = database.Exec(`CREATE TABLE IF NOT EXISTS links (
+		short    VARCHAR(255) PRIMARY KEY,
+		url      TEXT,
+		redirect VARCHAR(4),
+		UNIQUE(url, redirect)
+	)`)
 	if err != nil {
 		return err
-	} else if result.Err() != nil {
-		result.Close()
-		return result.Err()
 	}
-	result.Close()
 	return nil
 }
 
 // DeleteShort deletes all the entries with the given short URL.
 func DeleteShort(short string) error {
-	_, err := database.Exec("DELETE FROM links WHERE short=?", short)
+	_, err := database.Exec("DELETE FROM links WHERE short=$1", short)
 	return err
 }
 
 // DeleteURL deletes all the entries pointing to the given URL.
 func DeleteURL(url string) error {
-	_, err := database.Exec("DELETE FROM links WHERE url=?", url)
+	_, err := database.Exec("DELETE FROM links WHERE url=$1", url)
 	return err
 }
 
@@ -67,12 +63,12 @@ func DeleteURL(url string) error {
 // If the URL has already been shortened with the same redirect type, the already existing short URL will be returned.
 // In any other case, the requested short URL will be returned.
 // Warning: This will NOT check if the short URL is in use.
-func Insert(url, ishort, redirect string) string {
+func Insert(url, ishort, redirect string) (string, error) {
 	redirect = strings.ToLower(redirect)
-	if redirect != "http" && redirect != "html" && redirect != "js" {
+	if redirect != "http" && redirect != "html" {
 		redirect = "http"
 	}
-	result, err := database.Query("SELECT short FROM links WHERE url=? AND redirect=?;", url, redirect)
+	result, err := database.Query("SELECT short FROM links WHERE url=$1 AND redirect=$2", url, redirect)
 	if err == nil {
 		defer result.Close()
 		for result.Next() {
@@ -80,19 +76,19 @@ func Insert(url, ishort, redirect string) string {
 				break
 			}
 			var short string
-			result.Scan(&short)
+			_ = result.Scan(&short)
 			if len(short) != 0 {
-				return short
+				return short, nil
 			}
 		}
 	}
-	InsertDirect(ishort, url, redirect)
-	return ishort
+	err = InsertDirect(ishort, url, redirect)
+	return ishort, err
 }
 
 // InsertDirect inserts the given values into the database, no questions asked (except by the database itself)
 func InsertDirect(short, url, redirect string) error {
-	_, err := database.Exec("INSERT INTO links VALUES(?, ?, ?);", url, short, redirect)
+	_, err := database.Exec("INSERT INTO links (short, url, redirect) VALUES($1, $2, $3)", short, url, redirect)
 	if err != nil {
 		return err
 	}
@@ -100,8 +96,8 @@ func InsertDirect(short, url, redirect string) error {
 }
 
 // Query queries for the given short URL and returns the long URL and redirect type.
-func Query(short string) (string, string, error) {
-	result, err := database.Query("SELECT url, redirect FROM links WHERE short=?;", short)
+func Query(short string) (long, redirect string, err error) {
+	result, err := database.Query("SELECT url, redirect FROM links WHERE short=$1", short)
 	if err != nil {
 		return "", "", err
 	}
@@ -110,8 +106,7 @@ func Query(short string) (string, string, error) {
 		if result.Err() != nil {
 			return "", "", result.Err()
 		}
-		var long, redirect string
-		result.Scan(&long, &redirect)
+		_ = result.Scan(&long, &redirect)
 		if len(long) == 0 {
 			continue
 		} else if len(redirect) == 0 {
@@ -119,6 +114,5 @@ func Query(short string) (string, string, error) {
 		}
 		return long, redirect, nil
 	}
-	result.Close()
 	return "", "", fmt.Errorf("ID not found")
 }
