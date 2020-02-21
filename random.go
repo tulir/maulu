@@ -19,7 +19,7 @@ var src = rand.NewSource(time.Now().UnixNano())
 func randomShortURL() string {
 	var sb strings.Builder
 	sb.Grow(6)
-	for i, cache, remain := 4, src.Int63(), letterIdxMax; i >= 0; {
+	for i, cache, remain := 5, src.Int63(), letterIdxMax; i >= 0; {
 		if remain == 0 {
 			cache, remain = src.Int63(), letterIdxMax
 		}
