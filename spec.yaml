@@ -60,6 +60,24 @@ components:
           description: "The full short URL"
           example: https://mau.lu/foo
   responses:
+    ErrorBadRequestUnshorten:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errcode:
+                type: string
+                description: "A machine-readable error code"
+                enum:
+                  - NOT_JSON
+                  - INVALID_URL
+                  - NOT_SHORTENED
+              error:
+                type: string
+                description: "A human-readable error message"
+                example: Request body is not JSON
     ErrorBadRequest:
       description: Bad request
       content:
@@ -165,6 +183,34 @@ paths:
           $ref: "#/components/responses/ErrorConflict"
         413:
           $ref: "#/components/responses/ErrorTooLong"
+  /api/unshorten:
+    post:
+      summary: Unshorten a URL
+      operationId: unshorten
+      requestBody:
+        description: The URL to unshorten
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - url
+              properties:
+                url:
+                  type: string
+                  description: The full shortened URL to unshorten
+                  example: https://mau.lu/foo
+      responses:
+        200:
+          description: URL found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/URLInfo"
+        400:
+          $ref: "#/components/responses/ErrorBadRequestUnshorten"
+        404:
+          $ref: "#/components/responses/ErrorNotFound"
   /{short}:
     parameters:
       - in: path
@@ -176,7 +222,7 @@ paths:
           pattern: "[a-zA-Z0-9.-_ ]+"
     get:
       summary: Get the target of a short URL
-      operationId: unshorten
+      operationId: unshortenDirect
       responses:
         200:
           description: URL found and redirect type is HTML, or user requested JSON output.
@@ -198,7 +244,7 @@ paths:
           $ref: "#/components/responses/ErrorNotFound"
     put:
       summary: Shorten a URL
-      operationId: shortenPut
+      operationId: shortenDirect
       requestBody:
         description: The URL and extra information to shorten
         content:

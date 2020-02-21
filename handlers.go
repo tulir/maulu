@@ -51,6 +51,10 @@ type ShortenRequest struct {
 	RequestShort string `json:"short_code,omitempty"`
 }
 
+type UnshortenRequest struct {
+	URL string `json:"url"`
+}
+
 type RedirectTemplate struct {
 	URL string
 }
@@ -70,9 +74,8 @@ func get(w http.ResponseWriter, r *http.Request) {
 	target, redirect, err := data.Query(short)
 
 	if err != nil {
-		// No short url found
 		log.Debugfln("Failed to find redirect from short url %s: %v", short, err)
-		writeError(w, http.StatusNotFound, "NOT_FOUND", "%s is not a valid short url", short)
+		writeError(w, http.StatusNotFound, "NOT_FOUND", "%s is not an existing short url", short)
 		return
 	}
 
@@ -130,6 +133,7 @@ func put(w http.ResponseWriter, r *http.Request) {
 		}
 		req.URL = string(urlBytes)
 	} else {
+		w.Header().Add("Accept", "application/json,text/plain")
 		writeError(w, http.StatusUnsupportedMediaType, "INVALID_MEDIA_TYPE", "PUTting an URL requires either JSON or plain text URL.")
 		return
 	}
@@ -155,6 +159,49 @@ func shorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	actuallyShorten(w, getIP(r), req)
+}
+
+func unshorten(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Method", "POST, OPTIONS")
+	w.Header().Add("Access-Control-Allow-Headers", "Content-Type")
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	var req UnshortenRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		log.Debugfln("%s sent an invalid unshorten request.", getIP(r))
+		writeError(w, http.StatusBadRequest, "NOT_JSON", "Request body is not JSON")
+		return
+	}
+
+	parsed, err := url.Parse(req.URL)
+	if err != nil {
+		log.Debugfln("%s sent an invalid unshorten request.", getIP(r))
+		writeError(w, http.StatusBadRequest, "INVALID_URL", "The given URL is not valid")
+		return
+	}
+	if parsed.Host != baseURL.Host || !strings.HasPrefix(parsed.Path, baseURL.Path) {
+		log.Debugfln("%s sent an unshorten request with a non-mau\\Lu URL.", getIP(r))
+		writeError(w, http.StatusBadRequest, "NOT_SHORTENED", "The given URL is not a valid short URL")
+		return
+	}
+	short := path.Base(parsed.Path)
+
+	log.Debugfln("%[1]s requested long url of %[2]s", getIP(r), short)
+	target, redirect, err := data.Query(short)
+
+	if err != nil {
+		log.Debugfln("Failed to find redirect from short url %s: %v", short, err)
+		writeError(w, http.StatusNotFound, "NOT_FOUND", "%s is not an existing short url", short)
+		return
+	}
+
+	writeSuccess(w, http.StatusOK, target, redirect, short)
 }
 
 func actuallyShorten(w http.ResponseWriter, ip string, req ShortenRequest) {

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/gorilla/mux"
@@ -41,6 +42,7 @@ var confPath = flag.StringP("config", "c", "/etc/maulu/config.json", "The path o
 var logPath = flag.StringP("logs", "l", "/var/log/maulu", "The path to store log files in")
 
 var config *data.Configuration
+var baseURL *url.URL
 
 var templRedirect *template.Template
 
@@ -74,6 +76,7 @@ func main() {
 	log.Infofln("Listening on %s:%d", config.IP, config.Port)
 	r := mux.NewRouter()
 	r.HandleFunc("/api/shorten", shorten).Methods(http.MethodPost, http.MethodOptions)
+	r.HandleFunc("/api/unshorten", unshorten).Methods(http.MethodPost, http.MethodOptions)
 	r.HandleFunc("/{short:[a-zA-Z0-9.-_ ]+}", get).Methods(http.MethodGet, http.MethodHead)
 	r.HandleFunc("/{short:[a-zA-Z0-9.-_ ]+}", put).Methods(http.MethodPut)
 	r.HandleFunc("/{short:[a-zA-Z0-9.-_ ]+}", options).Methods(http.MethodOptions)
@@ -90,6 +93,11 @@ func loadConfig() {
 	if err != nil {
 		log.Fatalfln("Failed to load config: %[1]s", err)
 		os.Exit(1)
+	}
+	baseURL, err = url.Parse(config.URL)
+	if err != nil {
+		log.Fatalln("Invalid base URL:", err)
+		os.Exit(4)
 	}
 	log.Debugln("Successfully loaded config.")
 }
