@@ -32,8 +32,9 @@ import (
 )
 
 type URLInfo struct {
-	URL            string `json:"url"`
-	Short          string `json:"short"`
+	LongURL        string `json:"url"`
+	ShortURL       string `json:"short_url"`
+	ShortCode      string `json:"short_code"`
 	RedirectMethod string `json:"redirect"`
 }
 
@@ -47,7 +48,7 @@ type ShortenRequest struct {
 	Type         string `json:"type"`
 	URL          string `json:"url"`
 	RedirectType string `json:"redirect,omitempty"`
-	RequestShort string `json:"short,omitempty"`
+	RequestShort string `json:"short_code,omitempty"`
 }
 
 type RedirectTemplate struct {
@@ -92,7 +93,6 @@ func get(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
-
 
 func options(w http.ResponseWriter, r *http.Request) {
 	addGetCORS(w)
@@ -221,21 +221,18 @@ func actuallyShorten(w http.ResponseWriter, ip string, req ShortenRequest) {
 		return
 	}
 
-	resultURL, _ := url.Parse(config.URL)
 	insertResult, err := data.Insert(req.URL, req.RequestShort, req.RedirectType)
 	if err != nil {
 		log.Errorfln("Error inserting %v: %v", req, err)
 		writeError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "The server encountered an error")
 		return
 	}
-	resultURL.Path = path.Join(resultURL.Path, insertResult)
-	resultURLString := resultURL.String()
 	status := http.StatusCreated
 	if str != "" {
 		status = http.StatusOK
 	}
-	log.Debugfln("%s shortened %s into %s", ip, req.URL, resultURLString)
-	writeSuccess(w, status, req.URL, req.RedirectType, resultURLString)
+	log.Debugfln("%s shortened %s into %s", ip, req.URL, insertResult)
+	writeSuccess(w, status, req.URL, req.RedirectType, insertResult)
 }
 
 func writeError(w http.ResponseWriter, errcode int, simple, errmsg string, args ...interface{}) {
@@ -247,13 +244,17 @@ func writeError(w http.ResponseWriter, errcode int, simple, errmsg string, args 
 	}
 }
 
-func writeSuccess(w http.ResponseWriter, status int, url, redirectMethod, short string) {
+func writeSuccess(w http.ResponseWriter, status int, longURL, redirectMethod, shortCode string) {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(status)
+
+	resultURL, _ := url.Parse(config.URL)
+	resultURL.Path = path.Join(resultURL.Path, shortCode)
 	err := json.NewEncoder(w).Encode(URLInfo{
-		URL:            url,
+		LongURL:        longURL,
 		RedirectMethod: redirectMethod,
-		Short:          short,
+		ShortCode:      shortCode,
+		ShortURL:       resultURL.String(),
 	})
 	if err != nil {
 		log.Warnln("Error encoding success response:", err)

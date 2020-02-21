@@ -34,7 +34,7 @@ components:
           enum:
             - http
             - html
-        short:
+        short_code:
           type: string
           description: "The requested short URL"
           example: foo
@@ -43,7 +43,7 @@ components:
       properties:
         url:
           type: string
-          description: "The URL to shorten"
+          description: "The target URL"
           example: https://example.com
         redirect:
           type: string
@@ -51,10 +51,14 @@ components:
           enum:
             - http
             - html
-        short:
+        short_code:
           type: string
-          description: "The requested short URL"
+          description: "The code part of the short URL"
           example: foo
+        short_url:
+          type: string
+          description: "The full short URL"
+          example: https://mau.lu/foo
   responses:
     ErrorBadRequest:
       description: Bad request
